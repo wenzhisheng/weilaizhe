@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.merchant.dao.IMerchantDao">
+
+  <!-- 验证商户ID与商户编码是否合法 -->
+  <select id="checkMerchantCode" resultType="java.lang.Integer">
+    select count(*)
+    from merchant t
+    where t.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+    and t.merchant_code = #{vo.merchantCode,jdbcType=VARCHAR}
+  </select>
+
+  <!-- 更新提现密码 -->
+  <update id="updateWithdrawPassWord">
+     update merchant t
+     set t.withdraw_password = #{vo.withdrawPassword,jdbcType=VARCHAR}
+     where t.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+   </update>
+
+  <!-- 修改手机号码/密码问题 -->
+  <update id="smsVerify" parameterType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    UPDATE merchant t
+    <set>
+      <if test="vo.telPhone != null">
+        t.telphone = #{vo.telPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.passwordProtectQuestion != null">
+        t.password_protect_question = #{vo.passwordProtectQuestion,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.passwordProtectAnswer != null">
+        t.password_protect_answer = #{vo.passwordProtectAnswer,jdbcType=VARCHAR},
+      </if>
+      t.gmt_modified = now()
+    </set>
+    where t.merchant_id = #{vo.merchantId,jdbcType=BIGINT}
+  </update>
+
+  <!-- 更新商户密码 -->
+  <update id="updateMerchantPassword">
+    update merchant t
+    set
+      t.password = #{vo.password,jdbcType=VARCHAR},
+      t.gmt_modified = now()
+    where merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+  </update>
+
+  <!-- 根据商户ID获取商户 -->
+  <select id="getMerchantById" resultType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    select <include refid="base_sql"/>
+    from merchant t
+    where 1=1
+    <if test="vo.merchantId != null">
+      and t.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+    </if>
+    <if test="vo.merchantCode != null">
+      and t.merchant_code = #{vo.merchantCode,jdbcType=VARCHAR}
+    </if>
+  </select>
+
+  <!-- 商户删除 -->
+  <delete id="delete" parameterType="java.lang.Integer">
+    delete from merchant
+    where merchant_id = #{merchantId,jdbcType=INTEGER}
+  </delete>
+
+  <!-- 更新商户信息 -->
+  <update id="update" parameterType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    update merchant t
+    <set>
+      <if test="vo.merchantName != null">
+        t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.merchantCode != null">
+        t.merchant_code = #{vo.merchantCode,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.account != null">
+        t.account = #{vo.account,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.password != null">
+        t.password = #{vo.password,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.withdrawPassword != null">
+        t.withdraw_password = #{vo.withdrawPassword,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.secretKey != null">
+        t.secret_key = #{vo.secretKey,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.telPhone != null">
+        t.telphone = #{vo.telPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.email != null">
+        t.email = #{vo.email,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.isEnable != null">
+        t.is_enable = #{vo.isEnable,jdbcType=INTEGER},
+      </if>
+      <if test="vo.passwordProtectQuestion != null">
+        t.password_protect_question = #{vo.passwordProtectQuestion,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.passwordProtectAnswer != null">
+        t.password_protect_answer = #{vo.passwordProtectAnswer,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.transferChargeType != null">
+        t.transfer_charge_type = #{vo.transferChargeType,jdbcType=TINYINT},
+      </if>
+      <if test="vo.paymentTransferCharge != null">
+        t.payment_transfer_charge = #{vo.paymentTransferCharge,jdbcType=DECIMAL},
+      </if>
+      <if test="vo.payoutTransferCharge != null">
+        t.payout_transfer_charge = #{vo.payoutTransferCharge,jdbcType=DECIMAL},
+      </if>
+      <if test="vo.withdrawTransferCharge != null">
+        t.withdraw_transfer_charge = #{vo.withdrawTransferCharge,jdbcType=DECIMAL},
+      </if>
+      <if test="vo.orderDelayTime != null">
+        t.order_delay_time = #{vo.orderDelayTime,jdbcType=INTEGER},
+      </if>
+      <if test="vo.ipAllowed != null">
+        t.ip_allowed = #{vo.ipAllowed,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.freezeType != null">
+        t.freeze_type = #{vo.freezeType,jdbcType=INTEGER},
+      </if>
+      <if test="vo.remark != null">
+        t.remark = #{vo.remark,jdbcType=VARCHAR},
+      </if>
+      gmt_modified = now()
+    </set>
+    where merchant_id = #{vo.merchantId,jdbcType=BIGINT}
+  </update>
+
+  <!-- 商户修改 -->
+  <update id="updateMerchant" parameterType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    update merchant t
+    <set>
+      <if test="vo.merchantName != null">
+        t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.secretKey != null">
+        t.secret_key = #{vo.secretKey,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.telPhone != null">
+        t.telphone = #{vo.telPhone,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.email != null">
+        t.email = #{vo.email,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.isEnable != null">
+        t.is_enable = #{vo.isEnable,jdbcType=INTEGER},
+      </if>
+      <if test="vo.orderDelayTime != null">
+        t.order_delay_time = #{vo.orderDelayTime,jdbcType=INTEGER},
+      </if>
+      <if test="vo.ipAllowed != null">
+        t.ip_allowed = #{vo.ipAllowed,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.remark != null">
+        t.remark = #{vo.remark,jdbcType=VARCHAR},
+      </if>
+      gmt_modified = now()
+    </set>
+    where merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+  </update>
+
+  <!-- 更新冻结方式 -->
+  <update id="updateMerchantByFreezeType" parameterType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    update merchant t set
+        t.freeze_type = #{vo.freezeType,jdbcType=INTEGER}
+    where t.account = #{vo.account,jdbcType=VARCHAR}
+  </update>
+
+  <!-- 商户登录 -->
+  <select id="login" resultType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    select
+      t.merchant_id as merchantId,
+      t.merchant_name as merchantName,
+      t.merchant_code as merchantCode,
+      t.account as account,
+      t.password as password,
+      t.secret_key as secretKey,
+      t.telphone as telPhone,
+      t.email as email,
+      t.is_enable as isEnable,
+      t.password_protect_question as passwordProtectQuestion,
+      t.payment_transfer_charge as paymentTransferCharge,
+      t.payout_transfer_charge as payoutTransferCharge,
+      t.withdraw_transfer_charge as withdrawTransferCharge,
+      t.order_delay_time as orderDelayTime,
+      t.ip_allowed as ipAllowed,
+      t.freeze_type as FreezeType,
+      t.remark as remark,
+      t.gmt_create as gmtCreate,
+      t.gmt_modified as gmtModified
+    from merchant t
+    where t.is_enable = '1'
+      and t.account = #{vo.account,jdbcType=VARCHAR}
+      and t.password = #{vo.password,jdbcType=VARCHAR}
+  </select>
+
+  <!-- base -->
+  <sql id="base_sql">
+    t.merchant_id as merchantId,
+    t.merchant_name as merchantName,
+    t.merchant_code as merchantCode,
+    t.account as account,
+    t.password as password,
+    t.withdraw_password as withdrawPassword,
+    t.secret_key as secretKey,
+    t.telphone as telPhone,
+    t.email as email,
+    t.is_enable as isEnable,
+    t.password_protect_question as passwordProtectQuestion,
+    t.password_protect_answer as passwordProtectAnswer,
+    t.transfer_charge_type as transferChargeType,
+    t.payment_transfer_charge as paymentTransferCharge,
+    t.payout_transfer_charge as payoutTransferCharge,
+    t.withdraw_transfer_charge as withdrawTransferCharge,
+    t.order_delay_time as orderDelayTime,
+    t.ip_allowed as ipAllowed,
+    t.freeze_type as FreezeType,
+    t.remark as remark,
+    t.gmt_create as gmtCreate,
+    t.gmt_modified as gmtModified
+  </sql>
+
+  <!-- 查询条件 -->
+  <sql id="search_condition">
+    where 1=1
+    <if test="vo.merchantId != null">
+      and t.merchant_id = #{vo.merchantId,jdbcType=BIGINT}
+    </if>
+    <if test="vo.merchantName != null">
+      and t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.merchantCode != null">
+      and t.merchant_code = #{vo.merchantCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.account != null">
+      and t.account = #{vo.account,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.password != null">
+      and t.password = #{vo.password,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.orderDelayTime != null">
+      and t.order_delay_time = #{vo.orderDelayTime,jdbcType=INTEGER}
+    </if>
+    <if test="vo.secretKey != null">
+      and t.secret_key = #{vo.secretKey,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.telPhone != null">
+      and t.telphone = #{vo.telPhone,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.email != null">
+      and t.email = #{vo.email,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.isEnable != null">
+      and t.is_enable = #{vo.isEnable,jdbcType=CHAR}
+    </if>
+    <if test="vo.startTime != null ">
+      and t.gmt_create &gt;= #{vo.startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="vo.endTime != null ">
+      and t.gmt_create &lt;= #{vo.endTime,jdbcType=TIMESTAMP}
+    </if>
+  </sql>
+
+  <!-- 申请商户 -->
+  <insert id="insert" parameterType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    insert into merchant (
+      merchant_name,
+      merchant_code,
+      account,
+      password,
+      withdraw_password,
+      secret_key,
+      telphone,
+      email,
+      is_enable,
+      password_protect_question,
+      password_protect_answer,
+      transfer_charge_type,
+      payment_transfer_charge,
+      payout_transfer_charge,
+      withdraw_transfer_charge,
+      order_delay_time,
+      ip_allowed,
+      freeze_type,
+      remark,
+      gmt_create,
+      gmt_modified
+    )
+    values (
+      #{vo.merchantName,jdbcType=VARCHAR},
+      #{vo.merchantCode,jdbcType=VARCHAR},
+      #{vo.account,jdbcType=VARCHAR},
+      #{vo.password,jdbcType=VARCHAR},
+      #{vo.withdrawPassword,jdbcType=VARCHAR},
+      #{vo.secretKey,jdbcType=VARCHAR},
+      #{vo.telPhone,jdbcType=VARCHAR},
+      #{vo.email,jdbcType=VARCHAR},
+      #{vo.isEnable,jdbcType=INTEGER},
+      #{vo.passwordProtectQuestion,jdbcType=VARCHAR},
+      #{vo.passwordProtectAnswer,jdbcType=VARCHAR},
+      #{vo.transferChargeType,jdbcType=TINYINT},
+      #{vo.paymentTransferCharge,jdbcType=DECIMAL},
+      #{vo.payoutTransferCharge,jdbcType=DECIMAL},
+      #{vo.withdrawTransferCharge,jdbcType=DECIMAL},
+      #{vo.orderDelayTime,jdbcType=INTEGER},
+      #{vo.ipAllowed,jdbcType=VARCHAR},
+      #{vo.freezeType,jdbcType=INTEGER},
+      #{vo.remark,jdbcType=VARCHAR},
+      sysdate(),
+      sysdate()
+    );
+  </insert>
+
+  <!-- 商户编码或账号是否使用 -->
+  <select id="getCodeOrAccountIsUse" resultType="int">
+    select count(*)
+    from merchant t
+    where 1=1
+    <if test="vo.account != null">
+      and t.account = #{vo.account,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.merchantCode != null">
+      and t.merchant_code = #{vo.merchantCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.merchantId != null">
+      and t.merchant_id != #{vo.merchantId,jdbcType=INTEGER}
+    </if>
+  </select>
+
+  <!-- 获取最大Id -->
+  <select id="getMaxId" resultType="int">
+      select ifnull(max(merchant_id), 0) from merchant;
+  </select>
+
+  <!-- 商户分页查询 -->
+  <select id="pageMerchant" resultType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    select
+    <include refid="base_sql"/>
+    ,f.balance as balance
+    ,group_concat(m.trade_type_name) as tradeTypeName
+    from merchant t
+    left join merchant_trade_type m on m.merchant_id = t.merchant_id and m.is_enable = 1
+    left join merchant_balance f on f.merchant_id = t.merchant_id
+    <include refid="search_condition"/>
+    group by t.merchant_id
+    order by t.gmt_create desc
+  </select>
+
+  <!-- 列表分页查询 -->
+  <select id="listMerchant" resultType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    select <include refid="base_sql"/>
+    from merchant t
+    <include refid="search_condition"/>
+    group by t.merchant_id
+    order by t.gmt_create desc;
+  </select>
+
+  <!-- 根据商户编码获取商户信息 -->
+  <select id="getMerchantByCode" resultType="com.weilaizhe.common.pojo.merchant.MerchantVO">
+    select <include refid="base_sql"/>
+    from merchant t
+    where t.merchant_code = #{vo.merchantCode,jdbcType=VARCHAR}
+  </select>
+
+</mapper>

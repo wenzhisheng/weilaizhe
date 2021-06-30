@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.balancechange.dao.IBalanceChangeDao">
+
+  <!-- 列表获取资金明细 -->
+  <select id="list" resultType="com.weilaizhe.common.pojo.balancechange.BalanceChangeVO">
+    select <include refid="base_sql"/>
+    from balance_change t
+    <include refid="search_condition"/>
+    order by t.gmt_create desc
+  </select>
+
+  <!-- 分页查询资金明细 -->
+  <select id="page" resultType="com.weilaizhe.common.pojo.balancechange.BalanceChangeVO">
+    select <include refid="base_sql"/>
+    from balance_change t
+    <include refid="search_condition"/>
+    order by t.gmt_create desc
+  </select>
+
+  <!-- 支付帐变 -->
+  <insert id="insertPayment">
+    insert into balance_change (
+    merchant_id,
+    merchant_name,
+    merchant_account,
+    trade_no,
+    out_trade_no,
+    balance_change_type,
+    old_blance,
+    new_blance,
+    transfer_charge,
+    transaction_amount,
+    trade_type_code,
+    trade_account,
+    trade_name,
+    gmt_create
+    )
+    values (
+    #{vo.merchantId,jdbcType=BIGINT},
+    #{vo.merchantName,jdbcType=VARCHAR},
+    #{vo.merchantAccount,jdbcType=VARCHAR},
+    #{vo.tradeNo,jdbcType=VARCHAR},
+    #{vo.outTradeNo,jdbcType=VARCHAR},
+    #{vo.balanceChangeType,jdbcType=TINYINT},
+    #{vo.oldBlance,jdbcType=DECIMAL},
+    #{vo.newBlance,jdbcType=DECIMAL},
+    #{vo.transferCharge,jdbcType=DECIMAL},
+    #{vo.transactionAmount,jdbcType=DECIMAL},
+    #{vo.tradeTypeCode,jdbcType=VARCHAR},
+    #{vo.tradeAccount,jdbcType=VARCHAR},
+    #{vo.tradeName,jdbcType=VARCHAR},
+    sysdate()
+    )
+  </insert>
+
+  <sql id="base_sql">
+    t.balance_change_id as balanceChangeId,
+    t.merchant_id as merchantId,
+    t.merchant_name as merchantName,
+    t.merchant_account as merchantAccount,
+    t.trade_no as tradeNo,
+    t.out_trade_no as outTradeNo,
+    t.balance_change_type as balanceChangeType,
+    t.old_blance as oldBlance,
+    t.new_blance as newBlance,
+    t.transfer_charge as transferCharge,
+    t.transaction_amount as transactionAmount,
+    t.trade_type_code as tradeTypeCode,
+    t.trade_account as tradeAccount,
+    t.trade_name as tradeName,
+    t.gmt_create as gmtCreate
+  </sql>
+
+  <sql id="search_condition">
+    where 1=1
+    <if test="vo.balanceChangeId != null">
+      and t.balance_change_id = #{vo.balanceChangeId,jdbcType=BIGINT}
+    </if>
+    <if test="vo.merchantId != null">
+      and t.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+    </if>
+    <if test="vo.merchantName != null">
+      and t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.merchantAccount != null">
+      and t.merchant_account = #{vo.merchantAccount,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeNo != null">
+      and t.trade_no = #{vo.tradeNo,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.outTradeNo != null">
+      and t.out_trade_no = #{vo.outTradeNo,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.balanceChangeType != null">
+      and t.balance_change_type = #{vo.balanceChangeType,jdbcType=TINYINT}
+    </if>
+    <if test="vo.oldBlance != null">
+      and t.old_blance = #{vo.oldBlance,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.newBlance != null">
+      and t.new_blance = #{vo.newBlance,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.transferCharge != null">
+      and t.transfer_charge = #{vo.transferCharge,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.transactionAmount != null">
+      and t.transaction_amount = #{vo.transactionAmount,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.tradeTypeCode != null">
+      and t.trade_type_code = #{vo.tradeTypeCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeAccount != null">
+      and t.trade_account = #{vo.tradeAccount,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeName != null">
+      and t.trade_name = #{vo.tradeName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.startTime != null">
+      and t.gmt_create &gt;= #{vo.startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="vo.endTime != null">
+      and t.gmt_create &lt;= #{vo.endTime,jdbcType=TIMESTAMP}
+    </if>
+  </sql>
+
+</mapper>

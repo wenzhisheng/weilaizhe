@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.order.dao.IPayoutOrderDao">
+
+  <!-- 查询单个订单 -->
+  <select id="getPayoutOrder" resultType="com.weilaizhe.common.pojo.order.PayoutOrderVO">
+    select <include refid="base_sql"/>
+    from order_payout t
+    where <include refid="search_condition"/>
+  </select>
+
+  <!-- 商户订单重复排查 -->
+  <select id="repeatOrderSubmission" resultType="java.lang.Integer">
+    select count(*)
+    from order_payout t
+    where t.merchant_code = #{vo.merchantCode,jdbcType=VARCHAR}
+    and t.merchant_order_number = #{vo.merchantOrderNumber,jdbcType=VARCHAR}
+  </select>
+
+    <!-- 更新订单 -->
+  <update id="updateOrder">
+    update order_payout t
+    <set>
+        <if test="vo.tradeStatus != null">
+            t.trade_status = #{vo.tradeStatus,jdbcType=INTEGER},
+        </if>
+        <if test="vo.payoutAmount != null">
+            t.payout_amount = #{vo.payoutAmount,jdbcType=DECIMAL},
+        </if>
+        t.gmt_modified = sysdate()
+    </set>
+    where platform_order_number = #{vo.platformOrderNumber,jdbcType=VARCHAR}
+  </update>
+
+  <!-- 订单分页查询 -->
+  <select id="pageOrder" resultType="com.weilaizhe.common.pojo.order.PayoutOrderVO">
+    select t1.transfer_charge as transferCharge, tt.* from (
+    <foreach collection="list" item="item" open="(" separator=")UNION ALL(" close=")">
+        select <include refid="base_sql"/>
+        from order_payout t
+        join merchant tm on t.merchant_id = tm.merchant_id
+        where <include refid="search_condition"/>
+        and tm.merchantAccount = #{vo.currentUser,jdbcType=VARCHAR}
+    </foreach>
+    ) tt
+    left join merchant_balance_change t1
+    on tt.merchantOrderNumber = t1.merchant_order_number
+    order by tt.payoutTime desc
+  </select>
+
+  <!-- 新增订单 -->
+  <insert id="insertOrder">
+    insert into order_payout (
+    merchant_id,
+    merchant_code,
+    platform_order_number,
+    merchant_order_number,
+    cardholder_name,
+    bank_code,
+    bank_number,
+    trade_status,
+    payout_amount,
+    transfer_charge,
+    payout_time,
+    creator,
+    mender,
+    gmt_create,
+    gmt_modified
+    )
+    values (
+    #{vo.merchantCode,jdbcType=VARCHAR},
+    #{vo.merchantName,jdbcType=VARCHAR},
+    #{vo.platformOrderNumber,jdbcType=VARCHAR},
+    #{vo.merchantOrderNumber,jdbcType=VARCHAR},
+    #{vo.cardholderName,jdbcType=VARCHAR},
+    #{vo.bankCode,jdbcType=VARCHAR},
+    #{vo.bankNumber,jdbcType=VARCHAR},
+    #{vo.tradeStatus,jdbcType=INTEGER},
+    #{vo.payoutAmount,jdbcType=DECIMAL},
+    #{vo.transferCharge,jdbcType=DECIMAL},
+    #{vo.payoutTime,jdbcType=TIMESTAMP},
+    sysdate(),
+    sysdate()
+    )
+  </insert>
+
+  <!-- base -->
+  <sql id="base_sql">
+    t.order_id as orderId,
+    t.merchant_code as merchantCode,
+    t.merchant_name as merchantName,
+    t.platform_order_number as platformOrderNumber,
+    t.merchant_order_number as merchantOrderNumber,
+    t.cardholder_name as cardholderName,
+    t.bank_code as bankCode,
+    t.bank_number as bankNumber,
+    t.trade_status as tradeStatus,
+    t.payout_amount as payoutAmount,
+    t.transfer_charge as transferCharge,
+    t.payout_time as payoutTime,
+    t.creator as creator,
+    t.mender as mender,
+    t.gmt_create as gmtCreate,
+    t.gmt_modified as gmtModified
+  </sql>
+
+  <sql id="search_condition">
+    1=1
+    <if test="vo.merchantCode != null">
+        and t.merchant_code = #{vo.merchantCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.merchantName != null">
+        and t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.platformOrderNumber != null">
+        and t.platform_order_number = #{vo.platformOrderNumber,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.merchantOrderNumber != null">
+        and t.merchant_order_number = #{vo.merchantOrderNumber,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.cardholderName != null">
+        and t.cardholder_name = #{vo.cardholderName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.bankCode != null">
+        and t.bank_code = #{vo.bankCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.bankNumber != null">
+        and t.bank_number = #{vo.bankNumber,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.payoutAmount != null">
+        and t.payout_amount = #{vo.payoutAmount,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.amountMin != null">
+        and t.payout_amount &gt;= #{vo.amountMin,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.amountMax != null">
+        and t.payout_amount &lt;= #{vo.amountMax,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.startTime != null ">
+        and t.payout_time &gt;= #{vo.startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="vo.endTime != null ">
+        and t.payout_time &lt;= #{vo.endTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="vo.tradeStatus != null ">
+        and t.trade_status = #{vo.tradeStatus,jdbcType=INTEGER}
+    </if>
+  </sql>
+
+</mapper>

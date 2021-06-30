@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.tradetype.dao.ITradeTypeDao">
+
+  <!-- 分页查询交易类型 -->
+  <select id="pageTradeType" resultType="com.weilaizhe.common.pojo.tradetype.TradeTypeVO">
+    select <include refid="base_sql"/>
+    from trade_type t
+    left join order_payment op on op.trade_type_code = t.trade_type_code
+    <include refid="search_condition"/>
+    group by t.trade_type_code
+    order by t.trade_type_sort desc
+  </select>
+
+  <!-- 列表查询交易类型名称 -->
+  <select id="listTradeTypeName" resultType="java.lang.String">
+    select trade_type_name
+    from trade_type
+  </select>
+
+  <!-- 列表查询交易类型 -->
+  <select id="listTradeType" resultType="com.weilaizhe.common.pojo.tradetype.TradeTypeVO">
+    select <include refid="base_sql"/>
+    from trade_type t
+  </select>
+
+  <!-- 交易类型删除 -->
+  <delete id="delete" parameterType="java.lang.Integer">
+    delete from trade_type
+    where trade_type_id = #{tradeTypeId,jdbcType=INTEGER}
+  </delete>
+
+  <!-- 更新交易类型 -->
+  <update id="update" parameterType="com.weilaizhe.common.pojo.tradetype.TradeTypeVO">
+    update trade_type zs
+    <set>
+      <if test="vo.tradeTypeCode != null">
+        zs.trade_type_code = #{vo.tradeTypeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.tradeTypeName != null">
+        zs.trade_type_name = #{vo.tradeTypeName,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.tradeTypeIcon != null">
+        zs.trade_type_icon = #{vo.tradeTypeIcon,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.tradeTypeSort != null">
+        zs.trade_type_sort = #{vo.tradeTypeSort,jdbcType=INTEGER},
+      </if>
+      <if test="vo.isRecommend != null">
+        zs.is_recommend = #{vo.isRecommend,jdbcType=INTEGER},
+      </if>
+      <if test="vo.isEnable != null">
+        zs.is_enable = #{vo.isEnable,jdbcType=INTEGER},
+      </if>
+      <if test="vo.singleLimit != null">
+        zs.single_limit = #{vo.singleLimit,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.dailyLimit != null">
+        zs.daily_limit = #{vo.dailyLimit,jdbcType=DECIMAL},
+      </if>
+      <if test="vo.systemTypeName != null">
+        zs.system_type_name = #{vo.systemTypeName,jdbcType=VARCHAR},
+      </if>
+      zs.gmt_modified = sysdate()
+    </set>
+    where zs.trade_type_id = #{vo.tradeTypeId,jdbcType=INTEGER}
+  </update>
+
+  <!-- 交易类型编码、名称不能重复 -->
+  <select id="getTradeTypeRepeat" resultType="com.weilaizhe.common.pojo.tradetype.TradeTypeVO">
+    select <include refid="base_sql"/>
+    from trade_type t
+    where 1=1
+    <if test="vo.tradeTypeCode != null">
+      and t.trade_type_code = #{vo.tradeTypeCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeTypeName != null">
+      and t.trade_type_name = #{vo.tradeTypeName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeTypeId != null">
+      and t.trade_type_id != #{vo.tradeTypeId,jdbcType=INTEGER}
+    </if>
+  </select>
+
+  <!-- 根据交易类型名称查询 -->
+  <select id="getReceiptTypeByName" resultType="com.weilaizhe.common.pojo.tradetype.TradeTypeVO">
+    select <include refid="base_sql"/>
+    from trade_type t
+    where t.trade_type_name = #{vo.tradeTypeName}
+  </select>
+
+  <!-- 交易交易类型 -->
+  <insert id="insert">
+    insert into trade_type (
+      trade_type_code,
+      trade_type_name,
+      trade_type_icon,
+      trade_type_sort,
+      is_recommend,
+      is_enable,
+      single_limit,
+      daily_limit,
+      system_type_name,
+      gmt_create,
+      gmt_modified
+    )
+    values (
+      #{vo.tradeTypeCode,jdbcType=VARCHAR},
+      #{vo.tradeTypeName,jdbcType=VARCHAR},
+      #{vo.tradeTypeIcon,jdbcType=VARCHAR},
+      #{vo.tradeTypeSort,jdbcType=INTEGER},
+      #{vo.isRecommend,jdbcType=INTEGER},
+      #{vo.isEnable,jdbcType=INTEGER},
+      #{vo.singleLimit,jdbcType=VARCHAR},
+      #{vo.dailyLimit,jdbcType=DECIMAL},
+      #{vo.systemTypeName,jdbcType=VARCHAR},
+      sysdate(),
+      sysdate()
+    )
+  </insert>
+
+  <sql id="base_sql">
+    t.trade_type_id as tradeTypeId,
+    t.trade_type_code as tradeTypeCode,
+    t.trade_type_name as tradeTypeName,
+    t.trade_type_icon as tradeTypeIcon,
+    t.trade_type_sort as tradeTypeSort,
+    t.is_recommend as isRecommend,
+    t.is_enable as isEnable,
+    t.single_limit as singleLimit,
+    t.daily_limit as dailyLimit,
+    t.system_type_name as systemTypeName,
+    t.gmt_create as gmtCreate,
+    t.gmt_modified as gmtModified
+  </sql>
+
+  <sql id="search_condition">
+    where 1=1
+    <if test="vo.tradeTypeId != null">
+      and t.trade_type_id = #{vo.tradeTypeId,jdbcType=INTEGER}
+    </if>
+    <if test="vo.tradeTypeCode != null">
+      and t.trade_type_code = #{vo.tradeTypeCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeTypeName != null">
+      and t.trade_type_name = #{vo.tradeTypeName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeTypeSort != null">
+      and t.trade_type_sort = #{vo.tradeTypeSort,jdbcType=INTEGER}
+    </if>
+    <if test="vo.isRecommend != null">
+      and t.is_recommend = #{vo.isRecommend,jdbcType=INTEGER}
+    </if>
+    <if test="vo.isEnable != null">
+      and t.is_enable = #{vo.isEnable,jdbcType=INTEGER}
+    </if>
+    <if test="vo.singleLimit != null">
+      and t.single_limit = #{vo.singleLimit,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.dailyLimit != null">
+      and t.daily_limit = #{vo.dailyLimit,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.systemTypeName != null">
+      and t.system_type_name = #{vo.systemTypeName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.startTime != null">
+      and t.gmt_create &gt;= #{vo.startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="vo.endTime != null">
+      and t.gmt_create &lt;= #{vo.endTime,jdbcType=TIMESTAMP}
+    </if>
+  </sql>
+
+</mapper>

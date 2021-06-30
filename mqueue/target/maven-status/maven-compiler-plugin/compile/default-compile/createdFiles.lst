@@ -1,0 +1,9 @@
+com\weilaizhe\mqueue\consumber\AlipayPersonalCallbackConfig.class
+com\weilaizhe\mqueue\processor\AlipayPersonalPoll.class
+com\weilaizhe\mqueue\consumber\AlipayMerchantCallbackConfig.class
+com\weilaizhe\mqueue\processor\AlipayPersonalCallback.class
+com\weilaizhe\mqueue\consumber\PaymentConfig.class
+com\weilaizhe\mqueue\processor\AlipayMerchantCallback.class
+com\weilaizhe\mqueue\processor\Payement.class
+com\weilaizhe\mqueue\consumber\AlipayPersonalPollConfig.class
+com\weilaizhe\mqueue\MqueueApplication.class

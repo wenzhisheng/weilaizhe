@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="admin" />
+        <module name="agency" />
+        <module name="common" />
+        <module name="merchant" />
+        <module name="mqueue" />
+        <module name="payment" />
+        <module name="schedule" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="admin" target="1.8" />
+      <module name="agency" target="1.8" />
+      <module name="common" target="1.8" />
+      <module name="merchant" target="1.8" />
+      <module name="mqueue" target="1.8" />
+      <module name="payment" target="1.8" />
+      <module name="schedule" target="1.8" />
+      <module name="weilaizhe" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="admin" options="-parameters" />
+      <module name="agency" options="-parameters" />
+      <module name="common" options="-parameters" />
+      <module name="merchant" options="-parameters" />
+      <module name="mqueue" options="-parameters" />
+      <module name="payment" options="-parameters" />
+      <module name="schedule" options="-parameters" />
+      <module name="weilaizhe" options="-parameters" />
+    </option>
+  </component>
+</project>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.bankcard.dao.IBankCardDao">
+
+  <!-- 列表查询银行编码 -->
+  <select id="list" resultType="com.weilaizhe.common.pojo.bankcard.BankCardVO">
+    select <include refid="base_sql"/>
+    from bank_card t
+    <include refid="search_condition"/>
+    order by t.bank_sort desc
+  </select>
+
+  <!-- 新增商户登录日志 -->
+  <insert id="insert" parameterType="com.weilaizhe.common.pojo.bankcard.BankCardVO">
+    insert into bank_card (
+      bank_code,
+      bank_name,
+      is_debit,
+      bank_sort,
+      gmt_create,
+      gmt_modified
+    )
+    values (
+      #{vo.bankCode,jdbcType=VARCHAR},
+      #{vo.bankName,jdbcType=VARCHAR},
+      #{vo.isDebit,jdbcType=INTEGER},
+      #{vo.bankSort,jdbcType=INTEGER},
+      sysdate(),
+      sysdate()
+    )
+  </insert>
+
+  <sql id="base_sql">
+    t.bank_code as bankCode,
+    t.bank_name as bankName,
+    t.is_debit as isDebit,
+    t.bank_sort as bankSort,
+    t.gmt_create as gmtCreate,
+    t.gmt_modified as gmtModified
+  </sql>
+
+  <sql id="search_condition">
+    where 1=1
+    <if test="vo.bankCardId != null">
+      and t.bank_card_id = #{vo.bankCardId,jdbcType=INTEGER}
+    </if>
+    <if test="vo.bankCode != null">
+      and t.bank_code = #{vo.bankCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.isDebit != null">
+      and t.is_debit = #{vo.isDebit,jdbcType=INTEGER}
+    </if>
+    <if test="vo.bankSort != null">
+      and t.bank_sort = #{vo.bankSort,jdbcType=INTEGER}
+    </if>
+    <if test="vo.startTime != null ">
+      and t.gmt_create &gt;= #{vo.startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="vo.endTime != null ">
+      and t.gmt_create &lt;= #{vo.endTime,jdbcType=TIMESTAMP}
+    </if>
+  </sql>
+
+</mapper>

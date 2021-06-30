@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.index.dao.IIndexDao">
+
+  <!-- 当天收款总额、支付获利、总获利、累计收款、当前余额 -->
+  <select id="getTodayMoney" resultType="com.weilaizhe.common.pojo.index.IndexMoneyVO">
+    select
+      sum(zs.transaction_amount) as todayReceiptMoney,
+      sum(zs.transfer_charge) as paymentProfit,
+      (select sum(zc.transfer_charge) from balance_change zc
+        where 1=1
+        <if test="vo.merchantId != null">
+          and zc.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+        </if>
+      ) as totalProfit,
+      (select sum(zb.balance) from merchant_balance zb
+        where 1=1
+        <if test="vo.merchantId != null">
+          and zb.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+        </if>
+      ) as currentBlance,
+      (select sum(zx.transaction_amount) from balance_change zx
+        where zx.balance_change_type = 1
+        <if test="vo.merchantId != null">
+          and zx.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+        </if>
+      ) as totalMoney
+    from balance_change zs
+    where
+      zs.balance_change_type = 1
+      and datediff( sysdate(), gmt_create) = 0
+      <if test="vo.merchantId != null">
+        and zs.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+      </if>
+  </select>
+
+  <!-- 支付 -->
+  <select id="getTotalOrderEnter" resultType="com.weilaizhe.common.pojo.index.IndexOrderVO">
+    select
+      count(*) as todayOrder,
+      (select count(*) from order_payment zx
+      where 1=1
+      <if test="vo.merchantId != null">
+        and zs.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+      </if>
+      ) as totalOrder
+    from order_payment zs
+    where datediff( sysdate(), gmt_create) = 0
+    <if test="vo.merchantId != null">
+      and zs.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+    </if>
+  </select>
+  <!-- 支出 -->
+  <select id="getTotalOrderOut" resultType="com.weilaizhe.common.pojo.index.IndexOrderVO">
+    select
+    count(*) as todayOrder,
+    (select count(*) from order_payment zx
+    where 1=1
+    <if test="vo.merchantId != null">
+      and zs.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+    </if>
+    ) as totalOrder
+    from order_payment zs
+    where datediff( sysdate(), gmt_create) = 0
+    <if test="vo.merchantId != null">
+      and zs.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+    </if>
+  </select>
+  <!-- 15天 -->
+  <select id="lastFifteenDaysOrder" resultType="com.weilaizhe.common.pojo.index.StrokeCountVO">
+    select
+      date_format( zs.payment_time, '%Y-%m-%d' ) as x,
+      count(zs.payment_time) as y
+    from order_payment zs
+    where datediff( sysdate(), gmt_create) &lt;= 15
+    <if test="vo.merchantId != null">
+      and zs.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+    </if>
+  </select>
+
+</mapper>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.merchantwithdraw.dao.IMerchantWithdrawDao">
+
+  <!-- 审核商户提现 -->
+  <update id="update" parameterType="com.weilaizhe.common.pojo.merchantwithdraw.MerchantWithdrawVO">
+    update merchant_withdraw zs
+    <set>
+        <if test="vo.withdrawStatus != null">
+          zs.withdraw_status = #{vo.withdrawStatus,jdbcType=INTEGER},
+        </if>
+        <if test="vo.systemReply != null">
+          zs.system_reply = #{vo.systemReply,jdbcType=VARCHAR},
+        </if>
+        <if test="vo.completedTime != null">
+          zs.completed_time = #{vo.completedTime,jdbcType=TIMESTAMP},
+        </if>
+        zs.gmt_modified = sysdate()
+    </set>
+    where zs.withdraw_id = #{vo.withdrawId,jdbcType=INTEGER}
+  </update>
+
+    <!-- 删除商户提现 -->
+  <delete id="delete" parameterType="java.lang.Integer">
+    delete from merchant_withdraw
+    where withdraw_id in
+    <foreach collection="vo.ids" item="item" index="index" open="(" separator="," close=")">
+        #{item}
+    </foreach>
+  </delete>
+
+  <!-- 分页查询商户提现 -->
+  <select id="page" resultType="com.weilaizhe.common.pojo.merchantwithdraw.MerchantWithdrawVO">
+    select <include refid="base_sql"/>
+    from merchant_withdraw t
+    <include refid="search_condition"/>
+    order by t.gmt_create desc
+  </select>
+
+  <!-- 申请提现 -->
+  <insert id="insert">
+    insert into merchant_withdraw (
+      merchant_id,
+      merchant_name,
+      withdraw_order_number,
+      withdraw_amount,
+      actual_amount,
+      transfer_charge,
+      withdraw_status,
+      bank_name,
+      bank_deposit_address,
+      bank_number,
+      payee,
+      remark,
+      system_reply,
+      completed_time,
+      gmt_create,
+      gmt_modified
+    )
+    values (
+      #{vo.merchantId,jdbcType=INTEGER},
+      #{vo.merchantName,jdbcType=VARCHAR},
+      #{vo.withdrawOrderNumber,jdbcType=VARCHAR},
+      #{vo.withdrawAmount,jdbcType=DECIMAL},
+      #{vo.actualAmount,jdbcType=DECIMAL},
+      #{vo.transferCharge,jdbcType=DECIMAL},
+      #{vo.withdrawStatus,jdbcType=INTEGER},
+      #{vo.bankName,jdbcType=VARCHAR},
+      #{vo.bankDepositAddress,jdbcType=VARCHAR},
+      #{vo.bankNumber,jdbcType=VARCHAR},
+      #{vo.payee,jdbcType=VARCHAR},
+      #{vo.remark,jdbcType=VARCHAR},
+      #{vo.systemReply,jdbcType=VARCHAR},
+      #{vo.completedTime,jdbcType=TIMESTAMP},
+      sysdate(),
+      sysdate()
+    );
+  </insert>
+
+  <sql id="base_sql">
+    t.withdraw_id as withdrawId,
+    t.merchant_id as merchantId,
+    t.merchant_name as merchantName,
+    t.withdraw_order_number as withdrawOrderNumber,
+    t.withdraw_amount as withdrawAmount,
+    t.actual_amount as actualAmount,
+    t.transfer_charge as transferCharge,
+    t.withdraw_status as withdrawStatus,
+    t.bank_name as bankName,
+    t.bank_deposit_address as bankDepositAddress,
+    t.bank_number as bankNumber,
+    t.payee as payee,
+    t.remark as remark,
+    t.system_reply as systemReply,
+    t.completed_time as completedTime,
+    t.gmt_create as gmtCreate,
+    t.gmt_modified as gmtModified
+  </sql>
+
+  <sql id="search_condition">
+    where 1=1
+    <if test="vo.withdrawId != null">
+        and t.withdraw_id = #{vo.withdrawId,jdbcType=BIGINT}
+    </if>
+    <if test="vo.merchantId != null">
+        and t.merchant_id = #{vo.merchantId,jdbcType=BIGINT}
+    </if>
+    <if test="vo.merchantName != null">
+        and t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.withdrawOrderNumber != null">
+        and t.withdraw_order_number = #{vo.withdrawOrderNumber,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.withdrawAmount != null">
+        and t.withdraw_amount = #{vo.withdrawAmount,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.actualAmount != null">
+        and t.actual_amount = #{vo.actualAmount,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.transferCharge != null">
+        and t.transfer_charge = #{vo.transferCharge,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.withdrawStatus != null">
+        and t.withdraw_status = #{vo.withdrawStatus,jdbcType=INTEGER}
+    </if>
+    <if test="vo.bankName != null">
+        and t.bank_name = #{vo.bankName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.bankDepositAddress != null">
+        and t.bank_deposit_address = #{vo.bankDepositAddress,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.bankNumber != null">
+        and t.bank_number = #{vo.bankNumber,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.payee != null">
+        and t.payee = #{vo.payee,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.remark != null">
+        and t.remark = #{vo.remark,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.systemReply != null">
+        and t.system_reply = #{vo.systemReply,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.startTime != null ">
+        and t.gmt_create &gt; #{vo.startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="vo.endTime != null ">
+        and t.gmt_create &lt; #{vo.endTime,jdbcType=TIMESTAMP}
+    </if>
+  </sql>
+
+</mapper>

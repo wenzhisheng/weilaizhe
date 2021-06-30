@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.wechatmerchant.dao.IWechatMerchantDao">
+
+  <select id="getWechatMerchantByCode" resultType="com.weilaizhe.common.pojo.wechatmerchant.WechatMerchantVO">
+    select <include refid="base_sql"/>
+    from wechat_merchant t
+    where 1=1
+    <if test="vo.wechatMerchantCode != null">
+      and t.wechat_merchant_code = #{vo.wechatMerchantCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.wechatMerchantId != null">
+      and t.wechat_merchant_id != #{vo.wechatMerchantId,jdbcType=INTEGER}
+    </if>
+  </select>
+
+  <!-- 更新当前微信商户收款额 -->
+  <update id="updateDailyTotalAmount" parameterType="com.weilaizhe.common.pojo.wechatmerchant.WechatMerchantVO">
+    update wechat_merchant tt
+    <set>
+      <if test="vo.isFull != null">
+        tt.is_full = (case when tt.daily_total_amount >= #{vo.dailyLimit,jdbcType=DECIMAL} then 1 else 0 end),
+      </if>
+      <if test="vo.dailyTotalAmount != null">
+        tt.daily_total_amount = tt.daily_total_amount + #{vo.dailyTotalAmount,jdbcType=DECIMAL},
+      </if>
+      tt.gmt_modified = sysdate()
+    </set>
+    where tt.wechat_merchant_code = #{vo.wechatMerchantCode,jdbcType=VARCHAR}
+  </update>
+
+  <!-- 定时任务，每天凌晨更新未满 -->
+  <update id="updateStatus">
+    update wechat_merchant t
+    set t.is_full = '0'
+  </update>
+
+  <!-- 获取最空闲微信商户 -->
+  <select id="getIdleAlipayMerchant" resultType="com.weilaizhe.common.pojo.wechatmerchant.WechatMerchantVO">
+    select <include refid="base_sql"/>
+    from wechat_merchant t
+    where t.merchant_id = #{app_id,jdbcType=BIGINT}
+    and t.is_enable = '1'
+    and t.is_full = '0'
+    and t.daily_total_amount &lt;= #{dailyLimit,jdbcType=DECIMAL}
+    order by gmt_modified desc limit 1;
+  </select>
+
+  <!-- 更新修改时间 -->
+  <update id="updateGmtModified" parameterType="java.lang.Integer">
+    update wechat_merchant t
+    set t.gmt_modified = sysdate()
+    where t.merchant_id = #{app_id,jdbcType=BIGINT}
+  </update>
+
+  <!-- 微信商户列表 -->
+  <select id="list" resultType="com.weilaizhe.common.pojo.wechatmerchant.WechatMerchantVO">
+    select <include refid="base_sql"/>
+    from wechat_merchant t
+    <include refid="search_condition"/>
+    order by t.gmt_modified asc
+  </select>
+
+  <!-- 批量获取列表 -->
+  <select id="batchList" resultType="com.weilaizhe.common.pojo.wechatmerchant.WechatMerchantVO">
+    select <include refid="base_sql"/>
+    from wechat_merchant t
+    where t.wechat_merchant_id in
+    <foreach collection="vo.ids" item="item" index="index" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </select>
+
+  <!-- 微信商户分页 -->
+  <select id="pageWechatMerchant" resultType="com.weilaizhe.common.pojo.wechatmerchant.WechatMerchantVO">
+    select <include refid="base_sql"/>
+    from wechat_merchant t
+    <include refid="search_condition"/>
+    order by t.gmt_modified asc
+  </select>
+
+  <!-- 微信商户更新 -->
+  <update id="update" parameterType="com.weilaizhe.common.pojo.wechatmerchant.WechatMerchantVO">
+    update wechat_merchant t
+    <set>
+      <if test="vo.merchantName != null">
+        t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.wechatMerchantName != null">
+        t.wechat_merchant_name = #{vo.wechatMerchantName,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.wechatMerchantCode != null">
+        t.wechat_merchant_code = #{vo.wechatMerchantCode,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.wechatAppid != null">
+        t.wechat_appid = #{vo.wechatAppid,jdbcType=VARCHAR},
+      </if>
+      <if test="vo.isEnableH5 != null">
+        t.is_enable_h5 = #{vo.isEnableH5,jdbcType=TINYINT},
+      </if>
+      <if test="vo.isEnable != null">
+        t.is_enable = #{vo.isEnable,jdbcType=TINYINT},
+      </if>
+      <if test="vo.isFull != null">
+        t.is_full = #{vo.isFull,jdbcType=TINYINT},
+      </if>
+      <if test="vo.dailyTotalAmount != null">
+        t.daily_total_amount = #{vo.dailyTotalAmount,jdbcType=DECIMAL},
+      </if>
+      t.gmt_modified = sysdate()
+    </set>
+    where t.wechat_merchant_id = #{vo.wechatMerchantId,jdbcType=INTEGER}
+  </update>
+
+  <!-- 微信商户删除 -->
+  <delete id="delete">
+    delete from wechat_merchant t
+    where t.merchant_id = #{vo.merchantId,jdbcType=BIGINT}
+    and t.wechat_merchant_id = #{vo.wechatMerchantId,jdbcType=BIGINT}
+  </delete>
+
+  <!-- 批量绑定 -->
+  <update id="batchBinding" parameterType="com.weilaizhe.common.pojo.wechatmerchant.WechatMerchantVO">
+    update wechat_merchant zs
+    <set>
+      <if test="vo.merchantId != null">
+        zs.merchant_id = #{vo.merchantId,jdbcType=INTEGER},
+      </if>
+      <if test="vo.merchantName != null">
+        zs.merchant_name = #{vo.merchantName,jdbcType=VARCHAR},
+      </if>
+      zs.gmt_modified = sysdate()
+    </set>
+    where zs.wechat_merchant_id in
+    <foreach collection="vo.ids" item="item" index="index" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </update>
+  <!-- 解绑 -->
+  <update id="unbind" parameterType="com.weilaizhe.common.pojo.wechatmerchant.WechatMerchantVO">
+    update wechat_merchant zs
+    set zs.merchant_id = null,zs.merchant_name = null
+    where zs.wechat_merchant_id = #{vo.wechatMerchantId,jdbcType=INTEGER}
+  </update>
+  
+  <!-- 微信商户新增 -->
+  <insert id="insert">
+    insert into wechat_merchant (
+      merchant_id,
+      merchant_name,
+      wechat_merchant_name,
+      wechat_merchant_code,
+      wechat_merchant_secret,
+      wechat_merchant_pay_url,
+      wechat_callback_url,
+      wechat_appid,
+      is_enable_h5,
+      is_enable,
+      is_full,
+      daily_total_amount,
+      total_payment,
+      remark,
+      goods_name,
+      gmt_create,
+      gmt_modified
+    )
+    values (
+      #{vo.merchantId,jdbcType=BIGINT},
+      #{vo.merchantName,jdbcType=VARCHAR},
+      #{vo.wechatMerchantName,jdbcType=VARCHAR},
+      #{vo.wechatMerchantCode,jdbcType=VARCHAR},
+      #{vo.wechatMerchantSecret,jdbcType=VARCHAR},
+      #{vo.wechatMerchantPayUrl,jdbcType=VARCHAR},
+      #{vo.wechatCallbackUrl,jdbcType=VARCHAR},
+      #{vo.wechatAppid,jdbcType=VARCHAR},
+      #{vo.isEnableH5,jdbcType=TINYINT},
+      #{vo.isEnable,jdbcType=TINYINT},
+      #{vo.isFull,jdbcType=TINYINT},
+      #{vo.dailyTotalAmount,jdbcType=DECIMAL},
+      #{vo.totalPayment,jdbcType=DECIMAL},
+      #{vo.remark,jdbcType=VARCHAR},
+      #{vo.goodsName,jdbcType=VARCHAR},
+      sysdate(),
+      sysdate()
+    )
+  </insert>
+
+  <sql id="base_sql">
+    t.wechat_merchant_id as wechatMerchantId,
+    t.merchant_id as merchantId,
+    t.merchant_name as merchantName,
+    t.wechat_merchant_name as wechatMerchantName,
+    t.wechat_merchant_code as wechatMerchantCode,
+    t.wechat_merchant_secret as wechatMerchantSecret,
+    t.wechat_merchant_pay_url as wechatMerchantPayUrl,
+    t.wechat_callback_url as wechatCallbackUrl,
+    t.wechat_appid as wechatAppid,
+    t.is_enable_h5 as isEnableH5,
+    t.is_enable as isEnable,
+    t.is_full as isFull,
+    t.daily_total_amount as dailyTotalAmount,
+    t.total_payment as totalPayment,
+    t.remark as remark,
+    t.goods_name as goodsName,
+    t.gmt_create as gmtCreate,
+    t.gmt_modified as gmtModified
+  </sql>
+
+  <sql id="search_condition">
+    where 1=1
+    <if test="vo.wechatMerchantId != null">
+      and t.wechat_merchant_id = #{vo.wechatMerchantId,jdbcType=INTEGER}
+    </if>
+    <if test="vo.merchantId != null">
+      and t.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+    </if>
+    <if test="vo.merchantName != null">
+      and t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.wechatMerchantName != null">
+      and t.wechat_merchant_name = #{vo.wechatMerchantName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.wechatMerchantCode != null">
+      and t.wechat_merchant_code = #{vo.wechatMerchantCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.wechatAppid != null">
+      and t.wechat_appid = #{vo.wechatAppid,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.isEnableH5 != null">
+      and t.is_enable_h5 = #{vo.isEnableH5,jdbcType=TINYINT}
+    </if>
+    <if test="vo.isEnable != null">
+      and t.is_enable = #{vo.isEnable,jdbcType=TINYINT}
+    </if>
+    <if test="vo.isFull != null">
+      and t.is_full = #{vo.isFull,jdbcType=TINYINT}
+    </if>
+    <if test="vo.remark != null">
+      and t.remark = #{vo.remark,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.dailyTotalAmount != null">
+      and t.daily_total_amount = #{vo.dailyTotalAmount,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.goodsName != null">
+      and t.goods_name = #{vo.goodsName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.startTime != null">
+      and t.gmt_create &gt;= #{vo.startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="vo.endTime != null">
+      and t.gmt_create &lt;= #{vo.endTime,jdbcType=TIMESTAMP}
+    </if>
+  </sql>
+
+</mapper>

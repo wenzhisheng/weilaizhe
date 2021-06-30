@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.order.dao.IPaymentOrderDao">
+
+  <!-- 查询单个订单 -->
+  <select id="getPaymentOrder" resultType="com.weilaizhe.common.pojo.order.PaymentOrderVO">
+    select <include refid="base_sql"/>
+    from order_payment t
+    <include refid="search_condition"/>
+  </select>
+
+  <!-- 商户订单重复排查 -->
+  <select id="repeatOrderSubmission" resultType="java.lang.Integer">
+    select count(*)
+    from order_payment t
+    where
+      t.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+      and t.out_trade_no = #{vo.outTradeNo,jdbcType=VARCHAR}
+  </select>
+
+  <!-- 更新订单 -->
+  <update id="updateOrder">
+    update order_payment zs
+    <set>
+      <if test="vo.tradeStatus != null">
+        zs.trade_status = #{vo.tradeStatus,jdbcType=INTEGER},
+      </if>
+      <if test="vo.callbackStatus != null">
+        zs.callback_status = #{vo.callbackStatus,jdbcType=INTEGER},
+      </if>
+      <if test="vo.totalAmount != null">
+        zs.total_amount = #{vo.totalAmount,jdbcType=DECIMAL},
+      </if>
+      zs.callback_time = sysdate(),
+      zs.gmt_modified = sysdate()
+    </set>
+    where zs.trade_no = #{vo.tradeNo,jdbcType=VARCHAR}
+  </update>
+
+  <!-- 订单分页查询 -->
+  <select id="pageOrder" resultType="com.weilaizhe.common.pojo.order.PaymentOrderVO">
+    select
+      <include refid="base_sql"/>,
+      ( case
+      when t.trade_status = 1 and t.callback_status = 1 then 1
+      when t.trade_status = 1 and t.callback_status = 3 then 2
+      when t.trade_status = 0 and t.callback_status = 0 then 3
+      when t.trade_status = 2 and t.callback_status = 2 then 4
+      when t.trade_status = 3 and t.callback_status = 3 then 5
+      else 0 end ) as orderStatus,
+      ( case
+      when t.trade_status = 1 and t.callback_status = 1 then 1
+      when t.trade_status = 1 and t.callback_status = 3 then 2
+      when t.trade_status = 0 and t.callback_status = 0 then 3
+      when t.trade_status = 2 and t.callback_status = 2 then 4
+      when t.trade_status = 3 and t.callback_status = 3 then 5
+      else 0 end ) as orderStatus2
+    from order_payment t
+      <include refid="search_condition"/>
+    order by t.gmt_create desc
+  </select>
+
+  <!-- 新增订单 -->
+  <insert id="insertOrder">
+    insert into order_payment (
+      merchant_id,
+      merchant_name,
+      trade_no,
+      out_trade_no,
+      trade_type_code,
+      trade_type_name,
+      trade_account,
+      notify_url,
+      return_url,
+      trade_status,
+      callback_status,
+      trade_amount,
+      total_amount,
+      trade_time,
+      callback_time,
+      gmt_create,
+      gmt_modified
+    )
+    values (
+      #{vo.merchantId,jdbcType=BIGINT},
+      #{vo.merchantName,jdbcType=VARCHAR},
+      #{vo.tradeNo,jdbcType=VARCHAR},
+      #{vo.outTradeNo,jdbcType=VARCHAR},
+      #{vo.tradeTypeCode,jdbcType=VARCHAR},
+      #{vo.tradeTypeName,jdbcType=VARCHAR},
+      #{vo.tradeAccount,jdbcType=VARCHAR},
+      #{vo.notifyUrl,jdbcType=VARCHAR},
+      #{vo.returnUrl,jdbcType=VARCHAR},
+      #{vo.tradeStatus,jdbcType=INTEGER},
+      #{vo.callbackStatus,jdbcType=INTEGER},
+      #{vo.tradeAmount,jdbcType=DECIMAL},
+      #{vo.totalAmount,jdbcType=DECIMAL},
+      #{vo.tradeTime,jdbcType=TIMESTAMP},
+      #{vo.callbackTime,jdbcType=TIMESTAMP},
+      #{vo.gmtCreate,jdbcType=TIMESTAMP},
+      sysdate()
+    )
+  </insert>
+
+  <!-- base -->
+  <sql id="base_sql">
+    t.order_id as orderId,
+    t.merchant_id as merchantId,
+    t.merchant_name as merchantName,
+    t.trade_no as tradeNo,
+    t.out_trade_no as outTradeNo,
+    t.trade_type_code as tradeTypeCode,
+    t.trade_type_name as tradeTypeName,
+    t.trade_account as tradeAccount,
+    t.notify_url as notifyUrl,
+    t.return_url as returnUrl,
+    t.trade_status as tradeStatus,
+    t.callback_status as callbackStatus,
+    t.trade_amount as tradeAmount,
+    t.total_amount as totalAmount,
+    t.trade_time as tradeTime,
+    t.callback_time as callbackTime,
+    t.gmt_create as gmtCreate,
+    t.gmt_modified as gmtModified
+  </sql>
+
+  <sql id="search_condition">
+    where 1=1
+    <if test="vo.merchantId != null">
+      and t.merchant_id = #{vo.merchantId,jdbcType=BIGINT}
+    </if>
+    <if test="vo.merchantName != null">
+      and t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeNo != null">
+      and t.trade_no = #{vo.tradeNo,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.outTradeNo != null">
+      and t.out_trade_no = #{vo.outTradeNo,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeTypeName != null">
+      and t.trade_type_name = #{vo.tradeTypeName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeAccount != null">
+      and t.trade_account = #{vo.tradeAccount,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.tradeAmount != null">
+      and t.trade_amount = #{vo.tradeAmount,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.amountMin != null">
+      and t.trade_amount &gt;= #{vo.amountMin,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.amountMax != null">
+      and t.trade_amount &lt;= #{vo.amountMax,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.startTime != null ">
+      and t.trade_time &gt;= #{vo.startTime,jdbcType=TIMESTAMP}
+    </if>
+    <if test="vo.endTime != null ">
+      and t.trade_time &lt;= #{vo.endTime,jdbcType=TIMESTAMP}
+    </if>
+    <choose>
+      <when test="vo.orderStatus == 1">
+        and t.trade_status = 1
+        and t.callback_status = 1
+      </when>
+      <when test="vo.orderStatus == 2">
+        and t.trade_status = 1
+        and t.callback_status = 3
+      </when>
+      <when test="vo.orderStatus == 3">
+        and t.trade_status = 0
+        and t.callback_status = 0
+      </when>
+      <when test="vo.orderStatus == 4">
+        and t.trade_status = 2
+        and t.callback_status = 2
+      </when>
+      <when test="vo.orderStatus == 5">
+        and t.trade_status = 3
+        and t.callback_status = 3
+      </when>
+    </choose>
+  </sql>
+
+</mapper>

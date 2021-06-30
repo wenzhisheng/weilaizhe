@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weilaizhe.common.merchantbalance.dao.IMerchantBalanceDao">
+
+  <!-- 根据商户ID查询余额 -->
+  <select id="queryById" resultType="com.weilaizhe.common.pojo.merchantbalance.MerchantBalanceVO">
+      select <include refid="base_sql"/>
+      from merchant_balance t
+      <include refid="search_condition"/>
+  </select>
+
+  <!-- 更新商户余额 -->
+  <update id="update" parameterType="com.weilaizhe.common.pojo.merchantbalance.MerchantBalanceVO">
+    update merchant_balance t
+    <set>
+      <if test="vo.balance != null">
+        t.balance = #{vo.balance,jdbcType=DECIMAL},
+      </if>
+      <if test="vo.payment != null">
+        t.payment = #{vo.balance,jdbcType=DECIMAL},
+      </if>
+      <if test="vo.payout != null">
+        t.payout = #{vo.payout,jdbcType=DECIMAL},
+      </if>
+      <if test="vo.transferCharge != null">
+        t.transfer_charge = #{vo.transferCharge,jdbcType=DECIMAL},
+      </if>
+        t.gmt_modified = now()
+    </set>
+    where t.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+  </update>
+
+  <!-- 获取商户余额 -->
+  <select id="getMerchantBalance" resultType="com.weilaizhe.common.pojo.merchantbalance.MerchantBalanceVO">
+    select <include refid="base_sql"/>
+    from merchant_balance t
+    <include refid="search_condition"/>
+  </select>
+
+  <!-- 分页条件查询 -->
+  <select id="page" resultType="com.weilaizhe.common.pojo.merchantbalance.MerchantBalanceVO">
+    select <include refid="base_sql"/>
+    from merchant_balance t
+    <include refid="search_condition"/>
+  </select>
+
+  <!-- 新增商户余额 -->
+  <insert id="insert" parameterType="com.weilaizhe.common.pojo.merchantbalance.MerchantBalanceVO">
+    insert into merchant_balance (
+      merchant_id,
+      merchant_name,
+      merchant_code,
+      merchant_account,
+      balance,
+      payment,
+      payout,
+      transfer_charge,
+      gmt_create,
+      gmt_modified
+    )
+    values (
+      #{vo.merchantId,jdbcType=INTEGER},
+      #{vo.merchantName,jdbcType=VARCHAR},
+      #{vo.merchantCode,jdbcType=VARCHAR},
+      #{vo.merchantAccount,jdbcType=VARCHAR},
+      #{vo.balance,jdbcType=DECIMAL},
+      #{vo.payment,jdbcType=DECIMAL},
+      #{vo.payout,jdbcType=DECIMAL},
+      #{vo.transferCharge,jdbcType=DECIMAL},
+      sysdate(),
+      sysdate()
+    );
+  </insert>
+
+  <!-- base -->
+  <sql id="base_sql">
+    t.balance_id as balanceId,
+    t.merchant_id as merchantId,
+    t.merchant_name as merchantName,
+    t.merchant_code as merchantCode,
+    t.merchant_account as merchantAccount,
+    t.balance as balance,
+    t.payment as payment,
+    t.payout as payout,
+    t.transfer_charge as transferCharge,
+    t.gmt_create as gmtCreate,
+    t.gmt_modified as gmtModified
+  </sql>
+
+  <!-- 查询条件 -->
+  <sql id="search_condition">
+    where 1=1
+    <if test="vo.balanceId != null">
+      and t.balance_id = #{vo.balanceId,jdbcType=INTEGER}
+    </if>
+    <if test="vo.merchantId != null">
+      and t.merchant_id = #{vo.merchantId,jdbcType=INTEGER}
+    </if>
+    <if test="vo.merchantName != null">
+      and t.merchant_name = #{vo.merchantName,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.merchantCode != null">
+      and t.merchant_code = #{vo.merchantCode,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.merchantAccount != null">
+      and t.merchant_account = #{vo.merchantAccount,jdbcType=VARCHAR}
+    </if>
+    <if test="vo.balance != null">
+      and t.balance = #{vo.balance,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.payment != null">
+      and t.payment = #{vo.payment,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.payout != null">
+      and t.payout = #{vo.payout,jdbcType=DECIMAL}
+    </if>
+    <if test="vo.transferCharge != null">
+      and t.transfer_charge = #{vo.transferCharge,jdbcType=DECIMAL}
+    </if>
+  </sql>
+
+</mapper>
